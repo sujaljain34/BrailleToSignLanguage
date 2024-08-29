@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Braille to Text Translator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        #brailleKeyboard {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 1rem;
+        }
+        .braille-column {
+            display: flex;
+            flex-direction: column;
+            margin: 0 40px; /* Further increased spacing between columns */
+        }
+        .braille-dot {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #007bff;
+            border: none;
+            margin: 10px 0;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .braille-dot.active {
+            background-color: #28a745;
+        }
+        #textOutput {
+            width: 100%;
+            max-width: 600px;
+            min-height: 100px;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            font-size: 1.2rem;
+            border: 2px solid #28a745;
+            border-radius: 5px;
+            background-color: white;
+        }
+        .action-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 0.5rem;
+        }
+        .action-button:hover {
+            background-color: #218838;
+        }
+        #backspaceButton {
+            background-color: #dc3545;
+        }
+        #backspaceButton:hover {
+            background-color: #c82333;
+        }
+        @media (max-width: 600px) {
+            .braille-dot {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8rem;
+            }
+            #textOutput {
+                width: 90%;
+            }
+            .braille-column {
+                margin: 0 20px; /* Adjust spacing for mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Braille to Text Translator</h1>
+    </header>
+    <main>
+        <div id="brailleKeyboard" role="group" aria-label="Braille Keyboard">
+            <div class="braille-column">
+                <button class="braille-dot" id="dot1" aria-label="Dot 1">1</button>
+                <button class="braille-dot" id="dot2" aria-label="Dot 2">2</button>
+                <button class="braille-dot" id="dot3" aria-label="Dot 3">3</button>
+            </div>
+            <div class="braille-column">
+                <button class="braille-dot" id="dot4" aria-label="Dot 4">4</button>
+                <button class="braille-dot" id="dot5" aria-label="Dot 5">5</button>
+                <button class="braille-dot" id="dot6" aria-label="Dot 6">6</button>
+            </div>
+        </div>
+        <div>
+            <button id="translateButton" class="action-button">Translate and Read</button>
+            <button id="backspaceButton" class="action-button">Backspace</button>
+        </div>
+        <div id="textOutput" aria-live="polite" aria-label="Translated Text"></div>
+    </main>
+    <script>
+        const brailleDots = document.querySelectorAll('.braille-dot');
+        const textOutput = document.getElementById('textOutput');
+        const translateButton = document.getElementById('translateButton');
+        const backspaceButton = document.getElementById('backspaceButton');
+        let synth = window.speechSynthesis;
+
+        // Braille to text mapping
+        const brailleToText = {
+            '100000': 'a', '110000': 'b', '100100': 'c', '100110': 'd', '100010': 'e',
+            '110100': 'f', '110110': 'g', '110010': 'h', '010100': 'i', '010110': 'j',
+            '101000': 'k', '111000': 'l', '101100': 'm', '101110': 'n', '101010': 'o',
+            '111100': 'p', '111110': 'q', '111010': 'r', '011100': 's', '011110': 't',
+            '101001': 'u', '111001': 'v', '010111': 'w', '101101': 'x', '101111': 'y',
+            '101011': 'z', '000000': ' '
+        };
+
+        brailleDots.forEach(dot => {
+            dot.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+        });
+
+        translateButton.addEventListener('click', function() {
+            let braillePattern = '';
+            brailleDots.forEach(dot => {
+                braillePattern += dot.classList.contains('active') ? '1' : '0';
+            });
+
+            let translatedChar = brailleToText[braillePattern] || '';
+            if (translatedChar) {
+                let currentText = textOutput.textContent;
+                let newText = currentText + translatedChar;
+                textOutput.textContent = newText;
+
+                // Read aloud the new character
+                const utterance = new SpeechSynthesisUtterance(translatedChar);
+                synth.speak(utterance);
+            } else {
+                // If no translation is found, provide feedback
+                const utterance = new SpeechSynthesisUtterance("No matching character");
+                synth.speak(utterance);
+            }
+
+            // Reset the Braille keyboard
+            brailleDots.forEach(dot => dot.classList.remove('active'));
+        });
+
+        backspaceButton.addEventListener('click', function() {
+            let currentText = textOutput.textContent;
+            if (currentText.length > 0) {
+                let newText = currentText.slice(0, -1);
+                textOutput.textContent = newText;
+                
+                // Provide audio feedback for backspace
+                const utterance = new SpeechSynthesisUtterance("Backspace");
+                synth.speak(utterance);
+            }
+        });
+
+        // Enable Braille keyboard support for mobile devices
+        if ('inputMode' in navigator) {
+            document.body.inputMode = 'braille';
+        }
+
+        // Add service worker for offline support
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(function(registration) {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(function(error) {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+    </script>
+</body>
+</html>
