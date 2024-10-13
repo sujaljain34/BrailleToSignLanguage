@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Braille and Sign Language Translator</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #f5f5f5;
+            --button-color: rgba(108, 117, 125, 0.3);
+            --button-hover-color: rgba(108, 117, 125, 0.5);
+            --text-color: #fff;
+            --heading-color: #333;
+            --font-family: 'Verdana', sans-serif;
+            --border-radius: 50%;
+            --interface-bg-color: rgba(108, 117, 125, 0.1);
+        }
+
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: var(--secondary-color);
+            color: var(--heading-color);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            text-align: center;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: var(--interface-bg-color);
+            border-radius: 10px;
+        }
+
+        .nav-button {
+            background-color: transparent;
+            border: none;
+            color: var(--heading-color);
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .nav-button:hover, .nav-button.active {
+            background-color: var(--button-hover-color);
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .interface {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .interface.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #brailleKeyboard {
+            display: grid;
+            grid-template-areas: 
+                "dot1 dot4"
+                "dot2 dot5"
+                "dot3 dot6";
+            grid-column-gap: 150px;
+            grid-row-gap: 30px;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .braille-dot {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--border-radius);
+            background-color: var(--button-color);
+            border: none;
+            color: var(--heading-color);
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .braille-dot:hover {
+            background-color: var(--button-hover-color);
+        }
+
+        #dot1 { grid-area: dot1; justify-self: start; }
+        #dot2 { grid-area: dot2; justify-self: start; }
+        #dot3 { grid-area: dot3; justify-self: start; }
+        #dot4 { grid-area: dot4; justify-self: end; }
+        #dot5 { grid-area: dot5; justify-self: end; }
+        #dot6 { grid-area: dot6; justify-self: end; }
+
+        #textOutput {
+            width: 100%;
+            min-height: 60px;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            font-size: 1.2rem;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            background-color: white;
+        }
+
+        .control-button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border-radius: 50px;
+            margin: 0.5rem;
+        }
+
+        .control-button:hover {
+            background-color: #388e3c;
+        }
+
+        #brailleGuide {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        #brailleGuide table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #brailleGuide th, #brailleGuide td {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+        }
+
+        #brailleGuide th {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+        }
+
+        @media (max-width: 600px) {
+            .braille-dot {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+
+            #brailleKeyboard {
+                grid-column-gap: 80px;
+                grid-row-gap: 20px;
+            }
+
+            .control-button {
+                padding: 1rem 2rem;
+                font-size: 1.2rem;
+            }
+
+            #brailleGuide table {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Braille and Sign Language Translator</h1>
+    </header>
+    <nav>
+        <button class="nav-button active" data-interface="blind">Blind Interface</button>
+        <button class="nav-button" data-interface="deaf">Deaf Interface</button>
+    </nav>
+    <main>
+        <div id="blindInterface" class="interface active">
+            <div id="brailleKeyboard" role="group" aria-label="Braille Keyboard">
+                <button class="braille-dot" id="dot1" aria-label="Dot 1">1</button>
+                <button class="braille-dot" id="dot4" aria-label="Dot 4">4</button>
+                <button class="braille-dot" id="dot2" aria-label="Dot 2">2</button>
+                <button class="braille-dot" id="dot5" aria-label="Dot 5">5</button>
+                <button class="braille-dot" id="dot3" aria-label="Dot 3">3</button>
+                <button class="braille-dot" id="dot6" aria-label="Dot 6">6</button>
+            </div>
+            <div id="textOutput" aria-live="polite" aria-label="Translated Text"></div>
+            <div id="currentLetter" style="font-size: 1.5rem; margin-bottom: 1rem;"></div>
+            <div id="controls">
+                <button id="spaceButton" class="control-button">Space</button>
+                <button id="backspaceButton" class="control-button">Backspace</button>
+            </div>
+
+            <div id="brailleGuide">
+                <h3>Braille Guide (A-Z)</h3>
+                <table>
+                    <tr>
+                        <th>Letter</th>
+                        <th>Dots</th>
+                    </tr>
+                    <tr><td>A</td><td>1</td></tr>
+                    <tr><td>B</td><td>1, 2</td></tr>
+                    <tr><td>C</td><td>1, 4</td></tr>
+                    <tr><td>D</td><td>1, 4, 5</td></tr>
+                    <tr><td>E</td><td>1, 5</td></tr>
+                    <tr><td>F</td><td>1, 2, 4</td></tr>
+                    <tr><td>G</td><td>1, 2, 4, 5</td></tr>
+                    <tr><td>H</td><td>1, 2, 5</td></tr>
+                    <tr><td>I</td><td>2, 4</td></tr>
+                    <tr><td>J</td><td>2, 4, 5</td></tr>
+                    <tr><td>K</td><td>1, 3</td></tr>
+                    <tr><td>L</td><td>1, 2, 3</td></tr>
+                    <tr><td>M</td><td>1, 3, 4</td></tr>
+                    <tr><td>N</td><td>1, 3, 4, 5</td></tr>
+                    <tr><td>O</td><td>1, 3, 5</td></tr>
+                    <tr><td>P</td><td>1, 2, 3, 4</td></tr>
+                    <tr><td>Q</td><td>1, 2, 3, 4, 5</td></tr>
+                    <tr><td>R</td><td>1, 2, 3, 5</td></tr>
+                    <tr><td>S</td><td>2, 3, 4</td></tr>
+                    <tr><td>T</td><td>2, 3, 4, 5</td></tr>
+                    <tr><td>U</td><td>1, 3, 6</td></tr>
+                    <tr><td>V</td><td>1, 2, 3, 6</td></tr>
+                    <tr><td>W</td><td>2, 4, 5, 6</td></tr>
+                    <tr><td>X</td><td>1, 3, 4, 6</td></tr>
+                    <tr><td>Y</td><td>1, 3, 4, 5, 6</td></tr>
+                    <tr><td>Z</td><td>1, 3, 5, 6</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div id="deafInterface" class="interface">
+            <h2>Deaf Interface</h2>
+            <!-- Content for Deaf Interface -->
+        </div>
+    </main>
+
+    <script>
+        // Braille patterns for each letter
+        const braillePatterns = {
+            '1': 'A',
+            '12': 'B',
+            '14': 'C',
+            '145': 'D',
+            '15': 'E',
+            '124': 'F',
+            '1245': 'G',
+            '125': 'H',
+            '24': 'I',
+            '245': 'J',
+            '13': 'K',
+            '123': 'L',
+            '134': 'M',
+            '1345': 'N',
+            '135': 'O',
+            '1234': 'P',
+            '12345': 'Q',
+            '1235': 'R',
+            '234': 'S',
+            '2345': 'T',
+            '136': 'U',
+            '1236': 'V',
+            '2456': 'W',
+            '1346': 'X',
+            '13456': 'Y',
+            '1356': 'Z'
+        };
+
+        let currentDots = new Set();
+        let currentText = '';
+        let dotTimeout;
+
+        document.querySelectorAll('.braille-dot').forEach(button => {
+            button.addEventListener('click', function() {
+                const dotNumber = this.textContent;
+                
+                if (currentDots.has(dotNumber)) {
+                    currentDots.delete(dotNumber);
+                    this.style.backgroundColor = 'var(--button-color)';
+                } else {
+                    currentDots.add(dotNumber);
+                    this.style.backgroundColor = 'var(--primary-color)';
+                }
+
+                // Clear any existing timeout
+                clearTimeout(dotTimeout);
+
+                // Set a new timeout
+                dotTimeout = setTimeout(() => {
+                    const currentPattern = Array.from(currentDots).sort().join('');
+                    if (braillePatterns[currentPattern]) {
+                        currentText += braillePatterns[currentPattern];
+                        document.getElementById('textOutput').textContent = currentText;
+                        resetDots();
+                    }
+                }, 1000); // Wait 1 second after last dot press
+
+                // Update current letter preview
+                updateCurrentLetterPreview();
+            });
+        });
+
+        function updateCurrentLetterPreview() {
+            const currentPattern = Array.from(currentDots).sort().join('');
+            const currentLetter = braillePatterns[currentPattern] || '';
+            document.getElementById('currentLetter').textContent = currentLetter ? `Current letter: ${currentLetter}` : '';
+        }
+
+        document.getElementById('spaceButton').addEventListener('click', function() {
+            clearTimeout(dotTimeout);
+            currentText += ' ';
+            document.getElementById('textOutput').textContent = currentText;
+            resetDots();
+        });
+
+        document.getElementById('backspaceButton').addEventListener('click', function() {
+            clearTimeout(dotTimeout);
+            if (currentText.length > 0) {
+                currentText = currentText.slice(0, -1);
+                document.getElementById('textOutput').textContent = currentText;
+            }
+            resetDots();
+        });
+
+        function resetDots() {
+            currentDots.clear();
+            document.querySelectorAll('.braille-dot').forEach(button => {
+                button.style.backgroundColor = 'var(--button-color)';
+            });
+            document.getElementById('currentLetter').textContent = '';
+        }
+
+        // Navigation between interfaces
+        document.querySelectorAll('.nav-button').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                document.querySelectorAll('.interface').forEach(interface => interface.classList.remove('active'));
+                document.getElementById(this.dataset.interface + 'Interface').classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
