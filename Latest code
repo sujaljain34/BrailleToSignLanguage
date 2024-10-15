@@ -282,6 +282,8 @@
     </main>
 
     <script>
+
+        
         // Braille patterns for each letter
         const braillePatterns = {
             '1': 'A',
@@ -495,7 +497,44 @@
     } else {
       console.error('Speech recognition is not supported in your browser.');
     }
+
+    
   
+    </script>
+>
+    <button id="translateToHindi" style="position: fixed; top: 10px; right: 10px; z-index: 1000;">Translate to Hindi</button>
+    <script>
+        
+    // This script should be added at the end of the body tag
+    (function() {
+        const translateButton = document.getElementById('translateToHindi');
+        let isHindi = false;
+    
+        translateButton.addEventListener('click', function() {
+            isHindi = !isHindi;
+            translatePage();
+            this.textContent = isHindi ? 'Translate to English' : 'Translate to Hindi';
+        });
+    
+        function translatePage() {
+            const elements = document.querySelectorAll('body *');
+            elements.forEach(element => {
+                if (element.childNodes.length === 1 && element.childNodes[0].nodeType === Node.TEXT_NODE) {
+                    const originalText = element.getAttribute('data-original-text') || element.textContent;
+                    if (!element.getAttribute('data-original-text')) {
+                        element.setAttribute('data-original-text', originalText);
+                    }
+                    element.textContent = isHindi ? simulateHindiTranslation(originalText) : originalText;
+                }
+            });
+        }
+    
+        function simulateHindiTranslation(text) {
+            // This is a placeholder function that simulates translation
+            // In a real implementation, you would call an actual translation API here
+            return text + " (in Hindi)";
+        }
+    })();
     </script>
 </body>
 </html>
