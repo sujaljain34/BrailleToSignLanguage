@@ -244,11 +244,31 @@
                 </table>
             </div>
         </div>
-
         <div id="deafInterface" class="interface">
             <h2>Deaf Interface</h2>
-            <!-- Content for Deaf Interface -->
+            <div id="signLanguageInput">
+                <textarea id="textInput" rows="4" cols="50" placeholder="Type your text here..."></textarea>
+            </div>
+            <div id="translationControls">
+                <button id="translateButton" class="control-button">Translate to Sign Language</button>
+                <button id="clearButton" class="control-button">Clear</button>
+            </div>
+            <div id="signLanguageOutput">
+                <h3>Sign Language Translation:</h3>
+                <div id="signImages"></div>
+            </div>
+            <div id="signLanguageGuide">
+                <h3>Common Sign Language Phrases</h3>
+                <ul>
+                    <li>Hello - Wave with palm facing outward</li>
+                    <li>Thank you - Touch chin with fingertips of flat hand, then move hand forward</li>
+                    <li>Please - Rub flat hand on chest in circular motion</li>
+                    <li>Sorry - Make fist and rub it in circular motion on chest</li>
+                    <li>How are you? - Palm-down hand moves from chin outward</li>
+                </ul>
+            </div>
         </div>
+        
     </main>
 
     <script>
@@ -314,6 +334,74 @@
                 // Update current letter preview
                 updateCurrentLetterPreview();
             });
+        });
+
+        function updateDeafInterface(text) {
+            document.getElementById('textInput').value = text;
+            document.getElementById('translateButton').click();
+        }
+
+        document.getElementById('spaceButton').addEventListener('click', function() {
+            clearTimeout(dotTimeout);
+            currentText += ' ';
+            document.getElementById('textOutput').textContent = currentText;
+            updateDeafInterface(currentText);
+            resetDots();
+        });
+
+        document.getElementById('backspaceButton').addEventListener('click', function() {
+            clearTimeout(dotTimeout);
+            if (currentText.length > 0) {
+                currentText = currentText.slice(0, -1);
+                document.getElementById('textOutput').textContent = currentText;
+                updateDeafInterface(currentText);
+            }
+            resetDots();
+        });
+
+        dotTimeout = setTimeout(() => {
+                    const currentPattern = Array.from(currentDots).sort().join('');
+                    if (braillePatterns[currentPattern]) {
+                        currentText += braillePatterns[currentPattern];
+                        document.getElementById('textOutput').textContent = currentText;
+                        updateDeafInterface(currentText);
+                        resetDots();
+                    }
+                }, 1000);
+
+                document.querySelectorAll('.nav-button').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                document.querySelectorAll('.interface').forEach(interface => interface.classList.remove('active'));
+                document.getElementById(this.dataset.interface + 'Interface').classList.add('active');
+
+                // Update deaf interface when switching to it
+                if (this.dataset.interface === 'deaf') {
+                    updateDeafInterface(currentText);
+                }
+            });
+        });
+
+        document.getElementById('translateButton').addEventListener('click', function() {
+            const inputText = document.getElementById('textInput').value;
+            const signImagesDiv = document.getElementById('signImages');
+            signImagesDiv.innerHTML = '';
+
+            const words = inputText.split(' ');
+            words.forEach(word => {
+                const imgElement = document.createElement('img');
+                imgElement.src = `/api/placeholder/100/100`; // Placeholder image
+                imgElement.alt = `Sign for "${word}"`;
+                imgElement.title = word;
+                signImagesDiv.appendChild(imgElement);
+            });
+        });
+
+        document.getElementById('clearButton').addEventListener('click', function() {
+            document.getElementById('textInput').value = '';
+            document.getElementById('signImages').innerHTML = '';
         });
 
         function updateCurrentLetterPreview() {
